@@ -313,6 +313,13 @@ def _snap_layout(
         window.focus()
 
 
+def _top_n_windows(num_windows: int):
+    active_window = ui.active_window()
+    ui_windows = ui.windows()
+    active_index = ui_windows.index(active_window)
+    return ui_windows[active_index : active_index + num_windows]
+
+
 @mod.capture(rule="{user.window_snap_positions}")
 def window_snap_position(m) -> RelativeScreenPos:
     return _snap_positions[m.window_snap_positions]
@@ -375,10 +382,7 @@ class Actions:
         num_windows: int,
     ):
         """Snap next layout using the top three application windows"""
-        active_window = ui.active_window()
-        ui_windows = ui.windows()
-        active_index = ui_windows.index(active_window)
-        top_n_windows = ui_windows[active_index : active_index + num_windows]
+        top_n_windows = _top_n_windows(num_windows)
         top_n_windows.append(top_n_windows.pop(0))
         _snap_layout(positions, top_n_windows)
 
