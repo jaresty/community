@@ -354,12 +354,12 @@ class Actions:
             positions = positions_by_count[len(apps)]
         except KeyError:
             supported_layouts = ", ".join(map(str, positions_by_count.keys()))
-            message = f"{len(apps)} applications given but chosen layout only supports {supported_layouts}"
+            message = f"{len(apps) } applications given but chosen layout only supports {supported_layouts}"
             actions.app.notify(message, "Cannot arrange")
             raise NotImplementedError(message)
-        for index, app in enumerate(apps):
+        for index, app in enumerate(reversed(apps)):
             window = _get_app_window(app)
-            _snap_window_helper(window, positions[index])
+            _snap_window_helper(window, positions[len(apps) - index - 1])
             window.focus()
 
     def move_app_to_screen(app_name: str, screen_number: int):
