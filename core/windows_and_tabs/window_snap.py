@@ -386,6 +386,27 @@ class Actions:
         top_n_windows.append(top_n_windows.pop(0))
         _snap_layout(positions, top_n_windows)
 
+    def snap_window_layout_with_focus(
+        positions: list[RelativeScreenPos],
+        num_windows: int,
+        focus_window: int,
+    ):
+        """Snap layout with a specific window in focus."""
+        top_n_windows = _top_n_windows(num_windows)
+        focus_window -= 1
+
+        if 0 <= focus_window < len(top_n_windows):
+            top_n_windows[0], top_n_windows[focus_window] = (
+                top_n_windows[focus_window],
+                top_n_windows[0],
+            )
+        else:
+            message = f"Tried to focus the {focus_window} window applications given but chosen layout only supports {num_windows}"
+            actions.app.notify(message, "Cannot arrange")
+            raise ValueError(message)
+
+        _snap_layout(positions, top_n_windows)
+
     def move_app_to_screen(app_name: str, screen_number: int):
         """Move a specific application to another screen."""
         window = _get_app_window(app_name)

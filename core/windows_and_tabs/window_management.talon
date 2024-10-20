@@ -22,6 +22,8 @@ snap <user.window_pair_position> <user.running_applications> <user.running_appli
     user.snap_app_layout(window_pair_position, running_applications_list)
 snap <user.window_trio_position> <user.running_applications> <user.running_applications> <user.running_applications>:
     user.snap_app_layout(window_trio_position, running_applications_list)
+snap <user.ordinals_small> <user.window_trio_position>: user.snap_window_layout_with_focus(window_trio_position, 3, ordinals_small)
+snap <user.ordinals_small> <user.window_pair_position>: user.snap_window_layout_with_focus(window_pair_position, 2, ordinals_small)
 snap <user.window_trio_position>: user.snap_window_layout(window_trio_position, 3)
 snap <user.window_pair_position>: user.snap_window_layout(window_pair_position, 2)
 snap <user.running_applications> [screen] <number>:
