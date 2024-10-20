@@ -207,16 +207,6 @@ def _snap_window_helper(window, pos):
     )
 
 
-def _snap_layout(
-    positions: list[RelativeScreenPos],
-    windows: list[Any],
-):
-    """Split the screen between multiple windows."""
-    for index, window in enumerate(reversed(windows)):
-        _snap_window_helper(window, positions[len(windows) - index - 1])
-        window.focus()
-
-
 class RelativeScreenPos:
     """Represents a window position as a fraction of the screen."""
 
@@ -313,6 +303,16 @@ _trio_positions = {
 }
 
 
+def _snap_layout(
+    positions: list[RelativeScreenPos],
+    windows: list[Any],
+):
+    """Split the screen between multiple windows."""
+    for index, window in enumerate(reversed(windows)):
+        _snap_window_helper(window, positions[len(windows) - index - 1])
+        window.focus()
+
+
 @mod.capture(rule="{user.window_snap_positions}")
 def window_snap_position(m) -> RelativeScreenPos:
     return _snap_positions[m.window_snap_positions]
@@ -369,6 +369,15 @@ class Actions:
         """Split the screen between multiple applications."""
         windows = [_get_app_window(app) for app in apps]
         _snap_layout(positions, windows)
+
+    def snap_window_layout(
+        positions: list[RelativeScreenPos],
+        num_windows: int,
+    ):
+        """Snap next layout using the top three application windows"""
+        top_n_windows = ui.windows()[:num_windows]
+        top_n_windows.append(top_n_windows.pop(0))
+        _snap_layout(positions, top_n_windows)
 
     def move_app_to_screen(app_name: str, screen_number: int):
         """Move a specific application to another screen."""

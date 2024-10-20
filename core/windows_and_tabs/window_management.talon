@@ -19,8 +19,12 @@ snap <user.running_applications> <user.window_snap_position>:
     user.snap_app(running_applications, window_snap_position)
 # <user.running_applications> is here twice to require at least two applications.
 snap <user.window_pair_position> <user.running_applications> <user.running_applications>:
-    user.snap_layout(window_pair_position, running_applications_list)
+    user.snap_app_layout(window_pair_position, running_applications_list)
 snap <user.window_trio_position> <user.running_applications> <user.running_applications> <user.running_applications>:
-    user.snap_layout(window_trio_position, running_applications_list)
+    user.snap_app_layout(window_trio_position, running_applications_list)
+snap <user.window_trio_position>:
+    user.snap_window_layout(window_trio_position, 3)
+snap <user.window_pair_position>:
+    user.snap_window_layout(window_pair_position, 2)
 snap <user.running_applications> [screen] <number>:
     user.move_app_to_screen(running_applications, number)
