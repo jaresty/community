@@ -18,7 +18,11 @@ mod.list(
     "Predefined window positions for the current window. See `RelativeScreenPos`.",
 )
 mod.list(
-    "window_split_positions",
+    "window_pair_positions",
+    "Predefined window positions when splitting the screen between three applications.",
+)
+mod.list(
+    "window_trio_positions",
     "Predefined window positions when splitting the screen between three applications.",
 )
 mod.setting(
@@ -276,29 +280,26 @@ _snap_positions = {
     "fullscreen": RelativeScreenPos(0, 0, 1, 1),
 }
 
-_split_positions = {
-    "split": {
-        2: [_snap_positions["left"], _snap_positions["right"]],
-        3: [
-            _snap_positions["left third"],
-            _snap_positions["center third"],
-            _snap_positions["right third"],
-        ],
-    },
-    "clock": {
-        3: [
-            _snap_positions["left"],
-            _snap_positions["top right"],
-            _snap_positions["bottom right"],
-        ],
-    },
-    "counterclock": {
-        3: [
-            _snap_positions["right"],
-            _snap_positions["top left"],
-            _snap_positions["bottom left"],
-        ],
-    },
+_pair_positions = {
+    "split": [_snap_positions["left"], _snap_positions["right"]],
+}
+
+_trio_positions = {
+    "thirds": [
+        _snap_positions["left third"],
+        _snap_positions["center third"],
+        _snap_positions["right third"],
+    ],
+    "clock": [
+        _snap_positions["left"],
+        _snap_positions["top right"],
+        _snap_positions["bottom right"],
+    ],
+    "counterclock": [
+        _snap_positions["right"],
+        _snap_positions["top left"],
+        _snap_positions["bottom left"],
+    ],
 }
 
 
@@ -307,14 +308,20 @@ def window_snap_position(m) -> RelativeScreenPos:
     return _snap_positions[m.window_snap_positions]
 
 
-@mod.capture(rule="{user.window_split_positions}")
-def window_split_position(m) -> Dict[int, list[RelativeScreenPos]]:
-    return _split_positions[m.window_split_positions]
+@mod.capture(rule="{user.window_pair_positions}")
+def window_pair_position(m) -> list[RelativeScreenPos]:
+    return _pair_positions[m.window_pair_positions]
+
+
+@mod.capture(rule="{user.window_trio_positions}")
+def window_trio_position(m) -> list[RelativeScreenPos]:
+    return _trio_positions[m.window_trio_positions]
 
 
 ctx = Context()
 ctx.lists["user.window_snap_positions"] = _snap_positions.keys()
-ctx.lists["user.window_split_positions"] = _split_positions.keys()
+ctx.lists["user.window_pair_positions"] = _pair_positions.keys()
+ctx.lists["user.window_trio_positions"] = _trio_positions.keys()
 
 
 @mod.action_class
@@ -346,17 +353,10 @@ class Actions:
         _snap_window_helper(window, position)
 
     def snap_layout(
-        positions_by_count: Dict[int, list[RelativeScreenPos]],
+        positions: list[RelativeScreenPos],
         apps: list[str],
     ):
         """Split the screen between multiple applications."""
-        try:
-            positions = positions_by_count[len(apps)]
-        except KeyError:
-            supported_layouts = ", ".join(map(str, positions_by_count.keys()))
-            message = f"{len(apps) } applications given but chosen layout only supports {supported_layouts}"
-            actions.app.notify(message, "Cannot arrange")
-            raise NotImplementedError(message)
         for index, app in enumerate(reversed(apps)):
             window = _get_app_window(app)
             _snap_window_helper(window, positions[len(apps) - index - 1])
