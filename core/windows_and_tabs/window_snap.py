@@ -8,7 +8,7 @@ Originally from dweil/talon_community - modified for newapi by jcaw.
 #   platforms
 
 import logging
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 from talon import Context, Module, actions, settings, ui
 
@@ -207,6 +207,16 @@ def _snap_window_helper(window, pos):
     )
 
 
+def _snap_layout(
+    positions: list[RelativeScreenPos],
+    windows: list[Any],
+):
+    """Split the screen between multiple windows."""
+    for index, window in enumerate(reversed(windows)):
+        _snap_window_helper(window, positions[len(windows) - index - 1])
+        window.focus()
+
+
 class RelativeScreenPos:
     """Represents a window position as a fraction of the screen."""
 
@@ -352,15 +362,13 @@ class Actions:
         _bring_forward(window)
         _snap_window_helper(window, position)
 
-    def snap_layout(
+    def snap_app_layout(
         positions: list[RelativeScreenPos],
         apps: list[str],
     ):
         """Split the screen between multiple applications."""
-        for index, app in enumerate(reversed(apps)):
-            window = _get_app_window(app)
-            _snap_window_helper(window, positions[len(apps) - index - 1])
-            window.focus()
+        windows = [_get_app_window(app) for app in apps]
+        _snap_layout(positions, windows)
 
     def move_app_to_screen(app_name: str, screen_number: int):
         """Move a specific application to another screen."""
