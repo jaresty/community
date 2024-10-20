@@ -375,7 +375,10 @@ class Actions:
         num_windows: int,
     ):
         """Snap next layout using the top three application windows"""
-        top_n_windows = ui.windows()[:num_windows]
+        active_window = ui.active_window()
+        ui_windows = ui.windows()
+        active_index = ui_windows.index(active_window)
+        top_n_windows = ui_windows[active_index : active_index + num_windows]
         top_n_windows.append(top_n_windows.pop(0))
         _snap_layout(positions, top_n_windows)
 
