@@ -347,6 +347,13 @@ class Actions:
         """Move the active window to a specific position on its current screen, given a `RelativeScreenPos` object."""
         _snap_window_helper(ui.active_window(), position)
 
+    def snap_nth_window(window_number: int, position: RelativeScreenPos) -> None:
+        """Move the nth window to a specific position on its current screen, given a `RelativeScreenPos` object."""
+        top_n_windows = _top_n_windows(window_number)
+        target_window = top_n_windows[window_number - 1]
+        _snap_window_helper(target_window, position)
+        target_window.focus()
+
     def snap_window_to_position(position_name: str) -> None:
         """Move the active window to a specifically named position on its current screen, using a key from `_snap_positions`."""
         actions.user.snap_window(_snap_positions[position_name])
