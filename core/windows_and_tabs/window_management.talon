@@ -14,6 +14,12 @@ launch <user.launch_applications>: user.switcher_launch(launch_applications)
 snap <user.window_snap_position>: user.snap_window(window_snap_position)
 snap <user.ordinals_small> <user.window_snap_position>:
     user.snap_nth_window(ordinals_small, window_snap_position)
+snap <user.running_applications> <user.window_pair_position>:
+    user.switcher_focus(running_applications)
+    user.snap_window_layout_with_focus(window_pair_position, 2, 1)
+snap <user.running_applications> <user.window_trio_position>:
+    user.switcher_focus(running_applications)
+    user.snap_window_layout_with_focus(window_trio_position, 3, 1)
 snap next [screen]: user.move_window_next_screen()
 snap last [screen]: user.move_window_previous_screen()
 snap screen <number>: user.move_window_to_screen(number)
