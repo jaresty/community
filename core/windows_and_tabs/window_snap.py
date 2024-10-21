@@ -401,7 +401,7 @@ class Actions:
                 top_n_windows[0],
             )
         else:
-            message = f"Tried to focus the {focus_window} window applications given but chosen layout only supports {num_windows}"
+            message = f"Tried to focus the {focus_window} window but chosen layout only supports {num_windows}"
             actions.app.notify(message, "Cannot arrange")
             raise ValueError(message)
 
