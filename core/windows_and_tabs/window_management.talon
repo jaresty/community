@@ -14,10 +14,10 @@ launch <user.launch_applications>: user.switcher_launch(launch_applications)
 snap <user.window_snap_position>: user.snap_window(window_snap_position)
 snap <user.ordinals_small> <user.window_snap_position>:
     user.snap_nth_window(ordinals_small, window_snap_position)
-snap <user.running_applications> <user.window_pair_position>:
+snap <user.window_pair_position> <user.running_applications>:
     user.switcher_focus(running_applications)
     user.snap_window_layout_with_focus(window_pair_position, 2, 1)
-snap <user.running_applications> <user.window_trio_position>:
+snap <user.window_trio_position> <user.running_applications>:
     user.switcher_focus(running_applications)
     user.snap_window_layout_with_focus(window_trio_position, 3, 1)
 snap next [screen]: user.move_window_next_screen()
@@ -30,9 +30,9 @@ snap <user.window_pair_position> <user.running_applications> <user.running_appli
     user.snap_app_layout(window_pair_position, running_applications_list)
 snap <user.window_trio_position> <user.running_applications> <user.running_applications> <user.running_applications>:
     user.snap_app_layout(window_trio_position, running_applications_list)
-snap <user.ordinals_small> <user.window_trio_position>:
+snap <user.ordinals_small> into <user.window_trio_position>:
     user.snap_window_layout_with_focus(window_trio_position, 3, ordinals_small)
-snap <user.ordinals_small> <user.window_pair_position>:
+snap <user.ordinals_small> into <user.window_pair_position>:
     user.snap_window_layout_with_focus(window_pair_position, 2, ordinals_small)
 snap <user.window_trio_position>: user.snap_window_layout(window_trio_position, 3)
 snap <user.window_pair_position>: user.snap_window_layout(window_pair_position, 2)
