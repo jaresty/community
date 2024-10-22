@@ -216,9 +216,12 @@ class RelativeScreenPos:
 class WindowLayout:
     """Represents a layout of windows on a screen"""
 
-    def __init__(self, layout: list[RelativeScreenPos], windows: list[Any]):
+    def __init__(
+        self, layout: list[RelativeScreenPos], windows: list[Any], should_rotate: bool
+    ):
         self.layout = layout
         self.windows = windows
+        self.should_rotate = should_rotate
 
 
 _snap_positions = {
@@ -310,23 +313,49 @@ _split_positions = {
 }
 
 
-def _snap_layout(
-    positions: list[RelativeScreenPos],
-    windows: list[Any],
-):
+def _snap_layout(window_layout: WindowLayout):
     """Split the screen between multiple windows."""
-    for index, window in enumerate(reversed(windows)):
+    import copy
+
+    target_layout = copy.deepcopy(window_layout.layout)
+    snapped_windows = []
+    rotated_window = None
+    window_start_index = 0
+    print(window_layout.windows)
+    if window_layout.should_rotate:
+        for index, window in enumerate(window_layout.windows):
+            if window_start_index > 0:
+                break
+            print(f"Finding rotated window looking at {window}")
+            try:
+                rotated_window = window
+                _snap_window_helper(
+                    rotated_window,
+                    target_layout[-1],
+                )
+                target_layout.pop()
+                window_start_index = index + 1
+            except Exception as e:
+                print(f"Failed to snap rotated window: {e}")
+
+    for window in window_layout.windows[window_start_index:]:
         try:
-            _snap_window_helper(window, positions[len(windows) - index - 1])
-            window.focus()
-        except Exception:
-            print("Error snapping window")
+            if len(target_layout) <= 0:
+                break
 
+            _snap_window_helper(
+                window,
+                target_layout[0],
+            )
+            target_layout.pop(0)
+            snapped_windows.insert(0, window)
 
-def _rotate_windows(windows):
-    """Rotate the windows so the first becomes the last"""
-    windows.append(windows.pop(0))
-    return windows
+        except Exception as e:
+            print(f"Failed to snap window: {e}")
+    if window_layout.should_rotate:
+        snapped_windows.insert(0, rotated_window)
+    for window in snapped_windows:
+        window.focus()
 
 
 def _top_n_windows() -> list[Any]:
@@ -404,11 +433,11 @@ def window_layout(m) -> WindowLayout:
         )
         layout = _split_positions[m.window_split_positions][closest_key]
     if hasattr(m, "target_windows"):
-        target_windows = m.target_windows[: len(layout)]
+        target_windows = m.target_windows
     else:
-        target_windows = _rotate_windows(_top_n_windows()[: len(layout)])
+        target_windows = _top_n_windows()
 
-    return WindowLayout(layout, target_windows)
+    return WindowLayout(layout, target_windows, not hasattr(m, "target_windows"))
 
 
 ctx = Context()
@@ -448,7 +477,7 @@ class Actions:
         window_layout: WindowLayout,
     ):
         """Split the screen between multiple applications."""
-        _snap_layout(window_layout.layout, window_layout.windows)
+        _snap_layout(window_layout)
 
     def move_app_to_screen(app_name: str, screen_number: int):
         """Move a specific application to another screen."""
