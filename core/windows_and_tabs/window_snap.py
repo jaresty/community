@@ -316,8 +316,11 @@ def _snap_layout(
 ):
     """Split the screen between multiple windows."""
     for index, window in enumerate(reversed(windows)):
-        _snap_window_helper(window, positions[len(windows) - index - 1])
-        window.focus()
+        try:
+            _snap_window_helper(window, positions[len(windows) - index - 1])
+            window.focus()
+        except Exception:
+            print("Error snapping window")
 
 
 def _rotate_windows(windows):
