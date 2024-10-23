@@ -326,6 +326,10 @@ def _snap_layout(window_layout: WindowLayout):
         for index, window in enumerate(window_layout.windows):
             if window_start_index > 0:
                 break
+            if window is None:
+                target_layout.pop()
+                continue
+
             print(f"Finding rotated window looking at {window}")
             try:
                 rotated_window = window
@@ -339,6 +343,9 @@ def _snap_layout(window_layout: WindowLayout):
                 print(f"Failed to snap rotated window: {e}")
 
     for window in window_layout.windows[window_start_index:]:
+        if window is None:
+            target_layout.pop(0)
+            continue
         try:
             if len(target_layout) <= 0:
                 break
@@ -384,13 +391,45 @@ def all_windows(m) -> list[Any]:
     return _top_n_windows()
 
 
-@mod.capture(rule="<user.running_applications>+")
+@mod.capture(rule="gap")
+def skip_window(m) -> list[Any]:
+    return [None]
+
+
+@mod.capture(rule="<user.running_applications>")
 def application_windows(m) -> list[Any]:
     return [
         window
         for app in m.running_applications_list
         for window in actions.self.get_running_app(app).windows()
     ]
+
+
+@mod.capture(
+    rule="<user.application_windows>|<user.numbered_windows>|<user.skip_window>"
+)
+def layout_item(m) -> list[Any]:
+    # Check for multiple attributes and raise an error if found
+    attributes = [
+        hasattr(m, "application_windows"),
+        hasattr(m, "numbered_windows"),
+        hasattr(m, "skip_window"),
+    ]
+
+    if sum(attributes) > 1:
+        raise ValueError(
+            "Multiple attributes found on 'm'. Only one of 'application_windows', 'numbered_windows', or 'skip_window' should be present."
+        )
+
+    # Return the appropriate list based on which attribute is available
+    if hasattr(m, "application_windows"):
+        return m.application_windows
+    elif hasattr(m, "numbered_windows"):
+        return m.numbered_windows
+    elif hasattr(m, "skip_window"):
+        return m.skip_window
+    else:
+        return []
 
 
 @mod.capture(rule="<user.ordinals_small>+")
@@ -402,15 +441,12 @@ def numbered_windows(m) -> list[Any]:
     return selected_windows
 
 
-@mod.capture(
-    rule="(<user.application_windows>|<user.numbered_windows>) [<user.all_windows>]"
-)
+@mod.capture(rule="<user.layout_item>+ [<user.all_windows>]")
 def target_windows(m) -> list[Any]:
     windows = []
-    if hasattr(m, "application_windows_list"):
-        windows += m.application_windows
-    if hasattr(m, "numbered_windows"):
-        windows += m.numbered_windows
+    if hasattr(m, "layout_item_list"):
+        windows += [window for sublist in m.layout_item_list for window in sublist]
+
     if hasattr(m, "all_windows"):
         windows += [w for w in m.all_windows if w not in windows]
     return windows
