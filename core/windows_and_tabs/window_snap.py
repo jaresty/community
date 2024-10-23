@@ -319,14 +319,13 @@ def _snap_next(windows: list[Any], target_layout: RelativeScreenPos) -> int:
         if window is None:
             return index
         try:
-            print(f"Snapping window {window} into layout {target_layout}")
             _snap_window_helper(
                 window,
                 target_layout,
             )
             return index
         except Exception as e:
-            print(f"Failed to snap rotated window: {e}")
+            print(f"Failed to snap window: {e}")
     return -1
 
 
