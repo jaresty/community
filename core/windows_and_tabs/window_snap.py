@@ -313,54 +313,42 @@ _split_positions = {
 }
 
 
+def _snap_next(windows: list[Any], target_layout: RelativeScreenPos) -> int:
+    print(windows)
+    for index, window in enumerate(windows):
+        if window is None:
+            return index
+        try:
+            print(f"Snapping window {window} into layout {target_layout}")
+            _snap_window_helper(
+                window,
+                target_layout,
+            )
+            return index
+        except Exception as e:
+            print(f"Failed to snap rotated window: {e}")
+    return -1
+
+
 def _snap_layout(window_layout: WindowLayout):
     """Split the screen between multiple windows."""
     import copy
 
     target_layout = copy.deepcopy(window_layout.layout)
+    remaining_windows = window_layout.windows
     snapped_windows = []
-    rotated_window = None
-    window_start_index = 0
-    print(window_layout.windows)
+    snapped_window_index = 0
     if window_layout.should_rotate:
-        for index, window in enumerate(window_layout.windows):
-            if window_start_index > 0:
-                break
-            if window is None:
-                target_layout.pop()
-                continue
+        target_layout.insert(0, target_layout.pop())
 
-            print(f"Finding rotated window looking at {window}")
-            try:
-                rotated_window = window
-                _snap_window_helper(
-                    rotated_window,
-                    target_layout[-1],
-                )
-                target_layout.pop()
-                window_start_index = index + 1
-            except Exception as e:
-                print(f"Failed to snap rotated window: {e}")
+    while len(target_layout) > 0:
+        snapped_window_index = _snap_next(remaining_windows, target_layout.pop(0))
+        if snapped_window_index >= 0:
+            snapped_windows.insert(0, remaining_windows[snapped_window_index])
+            remaining_windows = remaining_windows[snapped_window_index + 1 :]
 
-    for window in window_layout.windows[window_start_index:]:
-        if window is None:
-            target_layout.pop(0)
-            continue
-        try:
-            if len(target_layout) <= 0:
-                break
-
-            _snap_window_helper(
-                window,
-                target_layout[0],
-            )
-            target_layout.pop(0)
-            snapped_windows.insert(0, window)
-
-        except Exception as e:
-            print(f"Failed to snap window: {e}")
     if window_layout.should_rotate:
-        snapped_windows.insert(0, rotated_window)
+        snapped_windows.insert(0, snapped_windows.pop())
     for window in snapped_windows:
         window.focus()
 
